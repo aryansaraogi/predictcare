@@ -1,24 +1,40 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Slider } from "@/components/ui/slider"
-import { useToast } from "@/hooks/use-toast"
-import { Brain, AlertCircle, ArrowLeft } from "lucide-react"
-import Link from "next/link"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { useToast } from "@/hooks/use-toast";
+import { Brain, AlertCircle, ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function StrokePredictionPage() {
-  const { toast } = useToast()
-  const [isLoading, setIsLoading] = useState(false)
-  const [result, setResult] = useState<null | { probability: number; risk: string }>(null)
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState<null | {
+    probability: number;
+    risk: string;
+  }>(null);
 
   // Update the formData state
   const [formData, setFormData] = useState({
@@ -28,129 +44,135 @@ export default function StrokePredictionPage() {
     avg_glucose_level: 100,
     bmi: 25,
     gender: 1, // 1 for Male, 0 for Female
-    residence_type: 1, // 1 for Urban, 0 for Rural
+    Residence_type: 1, // 1 for Urban, 0 for Rural
     smoking_status: 2, // 2 for never_smoked, 1 for formerly_smoked, 0 for smokes
-  })
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }))
-  }
+    }));
+  };
 
   const handleGenderChange = (value: string) => {
     const genderMap: Record<string, number> = {
       Male: 1,
       Female: 0,
       Other: 2,
-    }
+    };
 
     setFormData((prev) => ({
       ...prev,
       gender: genderMap[value] || 1,
-    }))
-  }
+    }));
+  };
 
   const handleResidenceChange = (value: string) => {
     const residenceMap: Record<string, number> = {
       Urban: 1,
       Rural: 0,
-    }
+    };
 
     setFormData((prev) => ({
       ...prev,
-      residence_type: residenceMap[value] || 1,
-    }))
-  }
+      Residence_type: residenceMap[value] || 1,
+    }));
+  };
 
   const handleSmokingChange = (value: string) => {
     const smokingMap: Record<string, number> = {
       never_smoked: 2,
       formerly_smoked: 1,
       smokes: 0,
-    }
+    };
 
     setFormData((prev) => ({
       ...prev,
       smoking_status: smokingMap[value] || 2,
-    }))
-  }
+    }));
+  };
 
   const handleSelectChange = (name: string, value: string) => {
     if (name === "gender") {
-      handleGenderChange(value)
-    } else if (name === "residence_type") {
-      handleResidenceChange(value)
+      handleGenderChange(value);
+    } else if (name === "Residence_type") {
+      handleResidenceChange(value);
     } else if (name === "smoking_status") {
-      handleSmokingChange(value)
+      handleSmokingChange(value);
     } else if (["hypertension", "heart_disease"].includes(name)) {
       setFormData((prev) => ({
         ...prev,
         [name]: Number.parseInt(value, 10),
-      }))
+      }));
     } else {
       setFormData((prev) => ({
         ...prev,
         [name]: value,
-      }))
+      }));
     }
-  }
+  };
 
   const handleSliderChange = (name: string, value: number[]) => {
     setFormData((prev) => ({
       ...prev,
       [name]: value[0],
-    }))
-  }
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setResult(null)
+    e.preventDefault();
+    setIsLoading(true);
+    setResult(null);
 
     try {
       // In a real app, this would be a fetch to your Flask backend
-      const response = await fetch("http://127.0.0.1:5000/predict/stroke", {
+      const response = await fetch("/api/predict/stroke", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to get prediction")
+        throw new Error("Failed to get prediction");
       }
 
       // Simulate a response for demonstration
       // In a real app, you would use: const data = await response.json();
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // Mock result for demonstration
-      const mockProbability = Math.random() * 0.5 // Lower probability for stroke
-      const mockRisk = mockProbability > 0.3 ? "High" : mockProbability > 0.1 ? "Moderate" : "Low"
+      const mockProbability = Math.random() * 0.5; // Lower probability for stroke
+      const mockRisk =
+        mockProbability > 0.3
+          ? "High"
+          : mockProbability > 0.1
+          ? "Moderate"
+          : "Low";
 
       setResult({
         probability: mockProbability,
         risk: mockRisk,
-      })
+      });
     } catch (error) {
-      console.error("Error:", error)
+      console.error("Error:", error);
       toast({
         title: "Prediction Failed",
-        description: "There was an error processing your request. Please try again.",
+        description:
+          "There was an error processing your request. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // Also update the resetForm function:
   const resetForm = () => {
-    setResult(null)
+    setResult(null);
     setFormData({
       age: 45,
       hypertension: 0,
@@ -158,14 +180,17 @@ export default function StrokePredictionPage() {
       avg_glucose_level: 100,
       bmi: 25,
       gender: 1,
-      residence_type: 1,
+      Residence_type: 1,
       smoking_status: 2,
-    })
-  }
+    });
+  };
 
   return (
     <div className="container mx-auto px-4 py-12">
-      <Link href="/" className="inline-flex items-center text-sm mb-6 hover:text-primary transition-colors">
+      <Link
+        href="/"
+        className="inline-flex items-center text-sm mb-6 hover:text-primary transition-colors"
+      >
         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home
       </Link>
 
@@ -179,16 +204,21 @@ export default function StrokePredictionPage() {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Disclaimer</AlertTitle>
           <AlertDescription>
-            This tool provides an estimate based on the information you provide and should not be considered a medical
-            diagnosis. Always consult with healthcare professionals for proper medical advice.
+            This tool provides an estimate based on the information you provide
+            and should not be considered a medical diagnosis. Always consult
+            with healthcare professionals for proper medical advice.
           </AlertDescription>
         </Alert>
 
         {result ? (
           <Card>
             <CardHeader>
-              <CardTitle className="text-center">Your Stroke Risk Assessment</CardTitle>
-              <CardDescription className="text-center">Based on the information you provided</CardDescription>
+              <CardTitle className="text-center">
+                Your Stroke Risk Assessment
+              </CardTitle>
+              <CardDescription className="text-center">
+                Based on the information you provided
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="text-center">
@@ -198,33 +228,39 @@ export default function StrokePredictionPage() {
                       result.risk === "High"
                         ? "text-red-500"
                         : result.risk === "Moderate"
-                          ? "text-amber-500"
-                          : "text-green-500"
+                        ? "text-amber-500"
+                        : "text-green-500"
                     }`}
                   />
                 </div>
                 <h2 className="text-3xl font-bold mb-2">{result.risk} Risk</h2>
-                <p className="text-muted-foreground">Estimated probability: {(result.probability * 100).toFixed(1)}%</p>
+                <p className="text-muted-foreground">
+                  Estimated probability: {(result.probability * 100).toFixed(1)}
+                  %
+                </p>
               </div>
 
               <div className="p-4 border rounded-lg">
                 <h3 className="font-semibold mb-2">What does this mean?</h3>
                 {result.risk === "High" && (
                   <p className="text-muted-foreground">
-                    A high risk assessment suggests you may have an elevated risk of experiencing a stroke. It's
-                    recommended to consult with a healthcare professional for a thorough evaluation.
+                    A high risk assessment suggests you may have an elevated
+                    risk of experiencing a stroke. It's recommended to consult
+                    with a healthcare professional for a thorough evaluation.
                   </p>
                 )}
                 {result.risk === "Moderate" && (
                   <p className="text-muted-foreground">
-                    A moderate risk assessment suggests you have some risk factors for stroke. Consider discussing these
-                    results with your healthcare provider during your next visit.
+                    A moderate risk assessment suggests you have some risk
+                    factors for stroke. Consider discussing these results with
+                    your healthcare provider during your next visit.
                   </p>
                 )}
                 {result.risk === "Low" && (
                   <p className="text-muted-foreground">
-                    A low risk assessment suggests you currently have a lower risk of experiencing a stroke. Continue
-                    maintaining a healthy lifestyle to keep your risk low.
+                    A low risk assessment suggests you currently have a lower
+                    risk of experiencing a stroke. Continue maintaining a
+                    healthy lifestyle to keep your risk low.
                   </p>
                 )}
               </div>
@@ -238,14 +274,18 @@ export default function StrokePredictionPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Enter Your Health Information</CardTitle>
-                <CardDescription>Fill in the form below to get your stroke risk assessment</CardDescription>
+                <CardDescription>
+                  Fill in the form below to get your stroke risk assessment
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="age">Age</Label>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">{formData.age} years</span>
+                      <span className="text-sm text-muted-foreground">
+                        {formData.age} years
+                      </span>
                     </div>
                     <Slider
                       id="age"
@@ -253,7 +293,9 @@ export default function StrokePredictionPage() {
                       max={90}
                       step={1}
                       value={[formData.age]}
-                      onValueChange={(value) => handleSliderChange("age", value)}
+                      onValueChange={(value) =>
+                        handleSliderChange("age", value)
+                      }
                     />
                   </div>
 
@@ -262,7 +304,9 @@ export default function StrokePredictionPage() {
                     <RadioGroup
                       id="hypertension"
                       value={formData.hypertension.toString()}
-                      onValueChange={(value) => handleSelectChange("hypertension", value)}
+                      onValueChange={(value) =>
+                        handleSelectChange("hypertension", value)
+                      }
                       className="flex space-x-4"
                     >
                       <div className="flex items-center space-x-2">
@@ -281,7 +325,9 @@ export default function StrokePredictionPage() {
                     <RadioGroup
                       id="heart_disease"
                       value={formData.heart_disease.toString()}
-                      onValueChange={(value) => handleSelectChange("heart_disease", value)}
+                      onValueChange={(value) =>
+                        handleSelectChange("heart_disease", value)
+                      }
                       className="flex space-x-4"
                     >
                       <div className="flex items-center space-x-2">
@@ -296,7 +342,9 @@ export default function StrokePredictionPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="avg_glucose_level">Average Glucose Level (mg/dL)</Label>
+                    <Label htmlFor="avg_glucose_level">
+                      Average Glucose Level (mg/dL)
+                    </Label>
                     <Input
                       id="avg_glucose_level"
                       name="avg_glucose_level"
@@ -326,8 +374,16 @@ export default function StrokePredictionPage() {
                   <div className="space-y-2">
                     <Label htmlFor="gender">Gender</Label>
                     <Select
-                      value={formData.gender === 1 ? "Male" : formData.gender === 0 ? "Female" : "Other"}
-                      onValueChange={(value) => handleSelectChange("gender", value)}
+                      value={
+                        formData.gender === 1
+                          ? "Male"
+                          : formData.gender === 0
+                          ? "Female"
+                          : "Other"
+                      }
+                      onValueChange={(value) =>
+                        handleSelectChange("gender", value)
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select gender" />
@@ -341,11 +397,13 @@ export default function StrokePredictionPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="residence_type">Residence Type</Label>
+                    <Label htmlFor="Residence_type">Residence Type</Label>
                     <RadioGroup
-                      id="residence_type"
-                      value={formData.residence_type === 1 ? "Urban" : "Rural"}
-                      onValueChange={(value) => handleSelectChange("residence_type", value)}
+                      id="Residence_type"
+                      value={formData.Residence_type === 1 ? "Urban" : "Rural"}
+                      onValueChange={(value) =>
+                        handleSelectChange("Residence_type", value)
+                      }
                       className="flex space-x-4"
                     >
                       <div className="flex items-center space-x-2">
@@ -366,17 +424,23 @@ export default function StrokePredictionPage() {
                         formData.smoking_status === 2
                           ? "never_smoked"
                           : formData.smoking_status === 1
-                            ? "formerly_smoked"
-                            : "smokes"
+                          ? "formerly_smoked"
+                          : "smokes"
                       }
-                      onValueChange={(value) => handleSelectChange("smoking_status", value)}
+                      onValueChange={(value) =>
+                        handleSelectChange("smoking_status", value)
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select smoking status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="never_smoked">Never Smoked</SelectItem>
-                        <SelectItem value="formerly_smoked">Formerly Smoked</SelectItem>
+                        <SelectItem value="never_smoked">
+                          Never Smoked
+                        </SelectItem>
+                        <SelectItem value="formerly_smoked">
+                          Formerly Smoked
+                        </SelectItem>
                         <SelectItem value="smokes">Smokes</SelectItem>
                       </SelectContent>
                     </Select>
@@ -393,5 +457,5 @@ export default function StrokePredictionPage() {
         )}
       </div>
     </div>
-  )
+  );
 }
