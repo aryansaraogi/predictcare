@@ -22,19 +22,19 @@ export default function CHDPredictionPage() {
 
   // Update the formData state
   const [formData, setFormData] = useState({
-    male: "1",
+    male: 1,
     age: 45,
-    education: "2",
-    currentSmoker: "0",
+    education: 2,
+    currentSmoker: 0,
     cigsPerDay: 0,
-    bpMeds: "0",
-    prevalentStroke: "0",
-    prevalentHyp: "0",
-    diabetes: "0",
+    BPMeds: 0,
+    prevalentStroke: 0,
+    prevalentHyp: 0,
+    diabetes: 0,
     totChol: 200,
     sysBP: 120,
     diaBP: 80,
-    bmi: 25,
+    BMI: 25,
     heartRate: 75,
     glucose: 100,
   })
@@ -48,10 +48,20 @@ export default function CHDPredictionPage() {
   }
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
+    // Convert string values to numbers for specific fields
+    if (
+      ["male", "education", "currentSmoker", "BPMeds", "prevalentStroke", "prevalentHyp", "diabetes"].includes(name)
+    ) {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: Number.parseInt(value, 10),
+      }))
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }))
+    }
   }
 
   const handleSliderChange = (name: string, value: number[]) => {
@@ -108,19 +118,19 @@ export default function CHDPredictionPage() {
   const resetForm = () => {
     setResult(null)
     setFormData({
-      male: "1",
+      male: 1,
       age: 45,
-      education: "2",
-      currentSmoker: "0",
+      education: 2,
+      currentSmoker: 0,
       cigsPerDay: 0,
-      bpMeds: "0",
-      prevalentStroke: "0",
-      prevalentHyp: "0",
-      diabetes: "0",
+      BPMeds: 0,
+      prevalentStroke: 0,
+      prevalentHyp: 0,
+      diabetes: 0,
       totChol: 200,
       sysBP: 120,
       diaBP: 80,
-      bmi: 25,
+      BMI: 25,
       heartRate: 75,
       glucose: 100,
     })
@@ -209,7 +219,7 @@ export default function CHDPredictionPage() {
                     <Label htmlFor="male">Gender</Label>
                     <RadioGroup
                       id="male"
-                      value={formData.male}
+                      value={formData.male.toString()}
                       onValueChange={(value) => handleSelectChange("male", value)}
                       className="flex space-x-4"
                     >
@@ -242,7 +252,7 @@ export default function CHDPredictionPage() {
                   <div className="space-y-2">
                     <Label htmlFor="education">Education Level</Label>
                     <Select
-                      value={formData.education}
+                      value={formData.education.toString()}
                       onValueChange={(value) => handleSelectChange("education", value)}
                     >
                       <SelectTrigger>
@@ -261,7 +271,7 @@ export default function CHDPredictionPage() {
                     <Label htmlFor="currentSmoker">Current Smoker</Label>
                     <RadioGroup
                       id="currentSmoker"
-                      value={formData.currentSmoker}
+                      value={formData.currentSmoker.toString()}
                       onValueChange={(value) => handleSelectChange("currentSmoker", value)}
                       className="flex space-x-4"
                     >
@@ -290,11 +300,11 @@ export default function CHDPredictionPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="bpMeds">BP Medications</Label>
+                    <Label htmlFor="BPMeds">BP Medications</Label>
                     <RadioGroup
-                      id="bpMeds"
-                      value={formData.bpMeds}
-                      onValueChange={(value) => handleSelectChange("bpMeds", value)}
+                      id="BPMeds"
+                      value={formData.BPMeds.toString()}
+                      onValueChange={(value) => handleSelectChange("BPMeds", value)}
                       className="flex space-x-4"
                     >
                       <div className="flex items-center space-x-2">
@@ -312,7 +322,7 @@ export default function CHDPredictionPage() {
                     <Label htmlFor="prevalentStroke">Prevalent Stroke</Label>
                     <RadioGroup
                       id="prevalentStroke"
-                      value={formData.prevalentStroke}
+                      value={formData.prevalentStroke.toString()}
                       onValueChange={(value) => handleSelectChange("prevalentStroke", value)}
                       className="flex space-x-4"
                     >
@@ -331,7 +341,7 @@ export default function CHDPredictionPage() {
                     <Label htmlFor="prevalentHyp">Prevalent Hypertension</Label>
                     <RadioGroup
                       id="prevalentHyp"
-                      value={formData.prevalentHyp}
+                      value={formData.prevalentHyp.toString()}
                       onValueChange={(value) => handleSelectChange("prevalentHyp", value)}
                       className="flex space-x-4"
                     >
@@ -350,7 +360,7 @@ export default function CHDPredictionPage() {
                     <Label htmlFor="diabetes">Diabetes</Label>
                     <RadioGroup
                       id="diabetes"
-                      value={formData.diabetes}
+                      value={formData.diabetes.toString()}
                       onValueChange={(value) => handleSelectChange("diabetes", value)}
                       className="flex space-x-4"
                     >
@@ -405,12 +415,12 @@ export default function CHDPredictionPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="bmi">Body Mass Index (BMI)</Label>
+                    <Label htmlFor="BMI">Body Mass Index (BMI)</Label>
                     <Input
-                      id="bmi"
-                      name="bmi"
+                      id="BMI"
+                      name="BMI"
                       type="number"
-                      value={formData.bmi}
+                      value={formData.BMI}
                       onChange={handleInputChange}
                       min={10}
                       max={50}
@@ -457,4 +467,3 @@ export default function CHDPredictionPage() {
     </div>
   )
 }
-

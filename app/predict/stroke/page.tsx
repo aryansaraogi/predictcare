@@ -23,13 +23,13 @@ export default function StrokePredictionPage() {
   // Update the formData state
   const [formData, setFormData] = useState({
     age: 45,
-    hypertension: "0",
-    heart_disease: "0",
+    hypertension: 0,
+    heart_disease: 0,
     avg_glucose_level: 100,
     bmi: 25,
-    gender: "Male",
-    residence_type: "Urban",
-    smoking_status: "never_smoked",
+    gender: 1, // 1 for Male, 0 for Female
+    residence_type: 1, // 1 for Urban, 0 for Rural
+    smoking_status: 2, // 2 for never_smoked, 1 for formerly_smoked, 0 for smokes
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,11 +40,62 @@ export default function StrokePredictionPage() {
     }))
   }
 
-  const handleSelectChange = (name: string, value: string) => {
+  const handleGenderChange = (value: string) => {
+    const genderMap: Record<string, number> = {
+      Male: 1,
+      Female: 0,
+      Other: 2,
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      gender: genderMap[value] || 1,
     }))
+  }
+
+  const handleResidenceChange = (value: string) => {
+    const residenceMap: Record<string, number> = {
+      Urban: 1,
+      Rural: 0,
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      residence_type: residenceMap[value] || 1,
+    }))
+  }
+
+  const handleSmokingChange = (value: string) => {
+    const smokingMap: Record<string, number> = {
+      never_smoked: 2,
+      formerly_smoked: 1,
+      smokes: 0,
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      smoking_status: smokingMap[value] || 2,
+    }))
+  }
+
+  const handleSelectChange = (name: string, value: string) => {
+    if (name === "gender") {
+      handleGenderChange(value)
+    } else if (name === "residence_type") {
+      handleResidenceChange(value)
+    } else if (name === "smoking_status") {
+      handleSmokingChange(value)
+    } else if (["hypertension", "heart_disease"].includes(name)) {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: Number.parseInt(value, 10),
+      }))
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }))
+    }
   }
 
   const handleSliderChange = (name: string, value: number[]) => {
@@ -102,13 +153,13 @@ export default function StrokePredictionPage() {
     setResult(null)
     setFormData({
       age: 45,
-      hypertension: "0",
-      heart_disease: "0",
+      hypertension: 0,
+      heart_disease: 0,
       avg_glucose_level: 100,
       bmi: 25,
-      gender: "Male",
-      residence_type: "Urban",
-      smoking_status: "never_smoked",
+      gender: 1,
+      residence_type: 1,
+      smoking_status: 2,
     })
   }
 
@@ -210,7 +261,7 @@ export default function StrokePredictionPage() {
                     <Label htmlFor="hypertension">Hypertension</Label>
                     <RadioGroup
                       id="hypertension"
-                      value={formData.hypertension}
+                      value={formData.hypertension.toString()}
                       onValueChange={(value) => handleSelectChange("hypertension", value)}
                       className="flex space-x-4"
                     >
@@ -229,7 +280,7 @@ export default function StrokePredictionPage() {
                     <Label htmlFor="heart_disease">Heart Disease</Label>
                     <RadioGroup
                       id="heart_disease"
-                      value={formData.heart_disease}
+                      value={formData.heart_disease.toString()}
                       onValueChange={(value) => handleSelectChange("heart_disease", value)}
                       className="flex space-x-4"
                     >
@@ -274,7 +325,10 @@ export default function StrokePredictionPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="gender">Gender</Label>
-                    <Select value={formData.gender} onValueChange={(value) => handleSelectChange("gender", value)}>
+                    <Select
+                      value={formData.gender === 1 ? "Male" : formData.gender === 0 ? "Female" : "Other"}
+                      onValueChange={(value) => handleSelectChange("gender", value)}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
@@ -290,7 +344,7 @@ export default function StrokePredictionPage() {
                     <Label htmlFor="residence_type">Residence Type</Label>
                     <RadioGroup
                       id="residence_type"
-                      value={formData.residence_type}
+                      value={formData.residence_type === 1 ? "Urban" : "Rural"}
                       onValueChange={(value) => handleSelectChange("residence_type", value)}
                       className="flex space-x-4"
                     >
@@ -308,7 +362,13 @@ export default function StrokePredictionPage() {
                   <div className="space-y-2">
                     <Label htmlFor="smoking_status">Smoking Status</Label>
                     <Select
-                      value={formData.smoking_status}
+                      value={
+                        formData.smoking_status === 2
+                          ? "never_smoked"
+                          : formData.smoking_status === 1
+                            ? "formerly_smoked"
+                            : "smokes"
+                      }
                       onValueChange={(value) => handleSelectChange("smoking_status", value)}
                     >
                       <SelectTrigger>
@@ -335,4 +395,3 @@ export default function StrokePredictionPage() {
     </div>
   )
 }
-

@@ -21,21 +21,21 @@ export default function DiabetesPredictionPage() {
 
   // Update the formData state
   const [formData, setFormData] = useState({
-    age: 45,
-    gender: "1",
-    bmi: 25,
-    sbp: 120,
-    dbp: 80,
-    fpg: 100,
-    chol: 200,
-    hdl: 50,
-    ldl: 130,
-    bun: 15,
-    ccr: 90,
-    ffpg: 95,
-    smoking_status: "0",
-    drinking_status: "0",
-    family_history: "0",
+    Age: 45,
+    Gender: 1,
+    BMI: 25,
+    SBP: 120,
+    DBP: 80,
+    FPG: 100,
+    Chol: 200,
+    HDL: 50,
+    LDL: 130,
+    BUN: 15,
+    CCR: 1.1, // Changed from 90 to 1.1 as requested
+    FFPG: 95,
+    smoking: 0,
+    drinking: 0,
+    family_histroy: 0, // Note the typo in "histroy" is intentional to match backend
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,10 +54,18 @@ export default function DiabetesPredictionPage() {
   }
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
+    // Convert string values to numbers for specific fields
+    if (["Gender", "smoking", "drinking", "family_histroy"].includes(name)) {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: Number.parseInt(value, 10),
+      }))
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }))
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,7 +75,7 @@ export default function DiabetesPredictionPage() {
 
     try {
       // In a real app, this would be a fetch to your Flask backend
-      const response = await fetch("http://127.0.0.1:5000/predict/diabetes", {
+      const response = await fetch("/api/predict/diabetes", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -107,21 +115,21 @@ export default function DiabetesPredictionPage() {
   const resetForm = () => {
     setResult(null)
     setFormData({
-      age: 45,
-      gender: "1",
-      bmi: 25,
-      sbp: 120,
-      dbp: 80,
-      fpg: 100,
-      chol: 200,
-      hdl: 50,
-      ldl: 130,
-      bun: 15,
-      ccr: 90,
-      ffpg: 95,
-      smoking_status: "0",
-      drinking_status: "0",
-      family_history: "0",
+      Age: 45,
+      Gender: 1,
+      BMI: 25,
+      SBP: 120,
+      DBP: 80,
+      FPG: 100,
+      Chol: 200,
+      HDL: 50,
+      LDL: 130,
+      BUN: 15,
+      CCR: 1.1,
+      FFPG: 95,
+      smoking: 0,
+      drinking: 0,
+      family_histroy: 0,
     })
   }
 
@@ -205,26 +213,26 @@ export default function DiabetesPredictionPage() {
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="age">Age</Label>
+                    <Label htmlFor="Age">Age</Label>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">{formData.age} years</span>
+                      <span className="text-sm text-muted-foreground">{formData.Age} years</span>
                     </div>
                     <Slider
-                      id="age"
+                      id="Age"
                       min={20}
                       max={90}
                       step={1}
-                      value={[formData.age]}
-                      onValueChange={(value) => handleSliderChange("age", value)}
+                      value={[formData.Age]}
+                      onValueChange={(value) => handleSliderChange("Age", value)}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="gender">Gender</Label>
+                    <Label htmlFor="Gender">Gender</Label>
                     <RadioGroup
-                      id="gender"
-                      value={formData.gender}
-                      onValueChange={(value) => handleSelectChange("gender", value)}
+                      id="Gender"
+                      value={formData.Gender.toString()}
+                      onValueChange={(value) => handleSelectChange("Gender", value)}
                       className="flex space-x-4"
                     >
                       <div className="flex items-center space-x-2">
@@ -239,12 +247,12 @@ export default function DiabetesPredictionPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="bmi">Body Mass Index (BMI)</Label>
+                    <Label htmlFor="BMI">Body Mass Index (BMI)</Label>
                     <Input
-                      id="bmi"
-                      name="bmi"
+                      id="BMI"
+                      name="BMI"
                       type="number"
-                      value={formData.bmi}
+                      value={formData.BMI}
                       onChange={handleInputChange}
                       min={10}
                       max={50}
@@ -253,12 +261,12 @@ export default function DiabetesPredictionPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="sbp">Systolic Blood Pressure (mmHg)</Label>
+                    <Label htmlFor="SBP">Systolic Blood Pressure (mmHg)</Label>
                     <Input
-                      id="sbp"
-                      name="sbp"
+                      id="SBP"
+                      name="SBP"
                       type="number"
-                      value={formData.sbp}
+                      value={formData.SBP}
                       onChange={handleInputChange}
                       min={80}
                       max={250}
@@ -266,12 +274,12 @@ export default function DiabetesPredictionPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="dbp">Diastolic Blood Pressure (mmHg)</Label>
+                    <Label htmlFor="DBP">Diastolic Blood Pressure (mmHg)</Label>
                     <Input
-                      id="dbp"
-                      name="dbp"
+                      id="DBP"
+                      name="DBP"
                       type="number"
-                      value={formData.dbp}
+                      value={formData.DBP}
                       onChange={handleInputChange}
                       min={40}
                       max={150}
@@ -279,12 +287,12 @@ export default function DiabetesPredictionPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="fpg">Fasting Plasma Glucose (mg/dL)</Label>
+                    <Label htmlFor="FPG">Fasting Plasma Glucose (mg/dL)</Label>
                     <Input
-                      id="fpg"
-                      name="fpg"
+                      id="FPG"
+                      name="FPG"
                       type="number"
-                      value={formData.fpg}
+                      value={formData.FPG}
                       onChange={handleInputChange}
                       min={50}
                       max={300}
@@ -293,12 +301,12 @@ export default function DiabetesPredictionPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="chol">Cholesterol (mg/dL)</Label>
+                    <Label htmlFor="Chol">Cholesterol (mg/dL)</Label>
                     <Input
-                      id="chol"
-                      name="chol"
+                      id="Chol"
+                      name="Chol"
                       type="number"
-                      value={formData.chol}
+                      value={formData.Chol}
                       onChange={handleInputChange}
                       min={100}
                       max={500}
@@ -306,12 +314,12 @@ export default function DiabetesPredictionPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="hdl">HDL Cholesterol (mg/dL)</Label>
+                    <Label htmlFor="HDL">HDL Cholesterol (mg/dL)</Label>
                     <Input
-                      id="hdl"
-                      name="hdl"
+                      id="HDL"
+                      name="HDL"
                       type="number"
-                      value={formData.hdl}
+                      value={formData.HDL}
                       onChange={handleInputChange}
                       min={20}
                       max={100}
@@ -319,12 +327,12 @@ export default function DiabetesPredictionPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="ldl">LDL Cholesterol (mg/dL)</Label>
+                    <Label htmlFor="LDL">LDL Cholesterol (mg/dL)</Label>
                     <Input
-                      id="ldl"
-                      name="ldl"
+                      id="LDL"
+                      name="LDL"
                       type="number"
-                      value={formData.ldl}
+                      value={formData.LDL}
                       onChange={handleInputChange}
                       min={50}
                       max={300}
@@ -332,12 +340,12 @@ export default function DiabetesPredictionPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="bun">Blood Urea Nitrogen (mg/dL)</Label>
+                    <Label htmlFor="BUN">Blood Urea Nitrogen (mg/dL)</Label>
                     <Input
-                      id="bun"
-                      name="bun"
+                      id="BUN"
+                      name="BUN"
                       type="number"
-                      value={formData.bun}
+                      value={formData.BUN}
                       onChange={handleInputChange}
                       min={5}
                       max={50}
@@ -345,12 +353,12 @@ export default function DiabetesPredictionPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="ccr">Creatinine Clearance Rate (mL/min)</Label>
+                    <Label htmlFor="CCR">Creatinine Clearance Rate (mL/min)</Label>
                     <Input
-                      id="ccr"
-                      name="ccr"
+                      id="CCR"
+                      name="CCR"
                       type="number"
-                      value={formData.ccr}
+                      value={formData.CCR}
                       onChange={handleInputChange}
                       min={30}
                       max={150}
@@ -358,12 +366,12 @@ export default function DiabetesPredictionPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="ffpg">Fasting FPG (mg/dL)</Label>
+                    <Label htmlFor="FFPG">Fasting FPG (mg/dL)</Label>
                     <Input
-                      id="ffpg"
-                      name="ffpg"
+                      id="FFPG"
+                      name="FFPG"
                       type="number"
-                      value={formData.ffpg}
+                      value={formData.FFPG}
                       onChange={handleInputChange}
                       min={50}
                       max={300}
@@ -372,11 +380,11 @@ export default function DiabetesPredictionPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="smoking_status">Smoking Status</Label>
+                    <Label htmlFor="smoking">Smoking Status</Label>
                     <RadioGroup
-                      id="smoking_status"
-                      value={formData.smoking_status}
-                      onValueChange={(value) => handleSelectChange("smoking_status", value)}
+                      id="smoking"
+                      value={formData.smoking.toString()}
+                      onValueChange={(value) => handleSelectChange("smoking", value)}
                       className="flex space-x-4"
                     >
                       <div className="flex items-center space-x-2">
@@ -391,11 +399,11 @@ export default function DiabetesPredictionPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="drinking_status">Drinking Status</Label>
+                    <Label htmlFor="drinking">Drinking Status</Label>
                     <RadioGroup
-                      id="drinking_status"
-                      value={formData.drinking_status}
-                      onValueChange={(value) => handleSelectChange("drinking_status", value)}
+                      id="drinking"
+                      value={formData.drinking.toString()}
+                      onValueChange={(value) => handleSelectChange("drinking", value)}
                       className="flex space-x-4"
                     >
                       <div className="flex items-center space-x-2">
@@ -410,11 +418,11 @@ export default function DiabetesPredictionPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="family_history">Family History of Diabetes</Label>
+                    <Label htmlFor="family_histroy">Family History of Diabetes</Label>
                     <RadioGroup
-                      id="family_history"
-                      value={formData.family_history}
-                      onValueChange={(value) => handleSelectChange("family_history", value)}
+                      id="family_histroy"
+                      value={formData.family_histroy.toString()}
+                      onValueChange={(value) => handleSelectChange("family_histroy", value)}
                       className="flex space-x-4"
                     >
                       <div className="flex items-center space-x-2">
@@ -441,4 +449,3 @@ export default function DiabetesPredictionPage() {
     </div>
   )
 }
-
