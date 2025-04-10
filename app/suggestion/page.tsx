@@ -35,14 +35,14 @@ export default function SuggestionPage() {
     try {
       // Replace these with your actual EmailJS service, template, and user IDs
       await emailjs.send(
-        "YOUR_SERVICE_ID",
-        "YOUR_TEMPLATE_ID",
+        "service_9hs1die",
+        "template_lvqr2zn",
         {
-          from_name: formData.name,
+          name: formData.name,
           subject: formData.subject,
-          message: formData.suggestion,
+          suggestion: formData.suggestion,
         },
-        "YOUR_PUBLIC_KEY",
+        "up7Peaw4yhzp7_HRq",
       )
 
       toast({
