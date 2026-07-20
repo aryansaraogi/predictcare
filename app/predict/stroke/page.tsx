@@ -36,16 +36,17 @@ export default function StrokePredictionPage() {
     risk: string;
   }>(null);
 
-  // Update the formData state
+  // Categorical fields are sent as the exact strings the backend's
+  // LabelEncoders were trained on (gender / Residence_type / smoking_status).
   const [formData, setFormData] = useState({
     age: 45,
     hypertension: 0,
     heart_disease: 0,
     avg_glucose_level: 100,
     bmi: 25,
-    gender: 1, // 1 for Male, 0 for Female
-    Residence_type: 1, // 1 for Urban, 0 for Rural
-    smoking_status: 2, // 2 for never_smoked, 1 for formerly_smoked, 0 for smokes
+    gender: "Male", // "Male" | "Female" | "Other"
+    Residence_type: "Urban", // "Urban" | "Rural"
+    smoking_status: "never smoked", // "never smoked" | "formerly smoked" | "smokes" | "Unknown"
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,57 +57,14 @@ export default function StrokePredictionPage() {
     }));
   };
 
-  const handleGenderChange = (value: string) => {
-    const genderMap: Record<string, number> = {
-      Male: 1,
-      Female: 0,
-      Other: 2,
-    };
-
-    setFormData((prev) => ({
-      ...prev,
-      gender: genderMap[value] || 1,
-    }));
-  };
-
-  const handleResidenceChange = (value: string) => {
-    const residenceMap: Record<string, number> = {
-      Urban: 1,
-      Rural: 0,
-    };
-
-    setFormData((prev) => ({
-      ...prev,
-      Residence_type: residenceMap[value] || 1,
-    }));
-  };
-
-  const handleSmokingChange = (value: string) => {
-    const smokingMap: Record<string, number> = {
-      never_smoked: 2,
-      formerly_smoked: 1,
-      smokes: 0,
-    };
-
-    setFormData((prev) => ({
-      ...prev,
-      smoking_status: smokingMap[value] || 2,
-    }));
-  };
-
   const handleSelectChange = (name: string, value: string) => {
-    if (name === "gender") {
-      handleGenderChange(value);
-    } else if (name === "Residence_type") {
-      handleResidenceChange(value);
-    } else if (name === "smoking_status") {
-      handleSmokingChange(value);
-    } else if (["hypertension", "heart_disease"].includes(name)) {
+    if (["hypertension", "heart_disease"].includes(name)) {
       setFormData((prev) => ({
         ...prev,
         [name]: Number.parseInt(value, 10),
       }));
     } else {
+      // gender, Residence_type, smoking_status are stored as strings
       setFormData((prev) => ({
         ...prev,
         [name]: value,
@@ -121,54 +79,43 @@ export default function StrokePredictionPage() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setResult(null);
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setIsLoading(true)
+  setResult(null)
 
-    try {
-      // In a real app, this would be a fetch to your Flask backend
-      const response = await fetch("/api/predict/stroke", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/predict/stroke`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    })
 
-      if (!response.ok) {
-        throw new Error("Failed to get prediction");
-      }
-
-      // Simulate a response for demonstration
-      // In a real app, you would use: const data = await response.json();
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Mock result for demonstration
-      const mockProbability = Math.random() * 0.5; // Lower probability for stroke
-      const mockRisk =
-        mockProbability > 0.3
-          ? "High"
-          : mockProbability > 0.1
-          ? "Moderate"
-          : "Low";
-
-      setResult({
-        probability: mockProbability,
-        risk: mockRisk,
-      });
-    } catch (error) {
-      console.error("Error:", error);
-      toast({
-        title: "Prediction Failed",
-        description:
-          "There was an error processing your request. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+    if (!response.ok) {
+      throw new Error("Failed to get prediction")
     }
-  };
+
+    const data = await response.json()
+
+    const prob = typeof data.probability === "number" ? data.probability : 0
+
+    setResult({
+      probability: prob,
+      risk: prob > 0.3 ? "High" : prob > 0.1 ? "Moderate" : "Low",
+    })
+  } catch (error) {
+    console.error("Error:", error)
+    toast({
+      title: "Prediction Failed",
+      description: "There was an error processing your request. Please try again.",
+      variant: "destructive",
+    })
+  } finally {
+    setIsLoading(false)
+  }
+}
 
   // Also update the resetForm function:
   const resetForm = () => {
@@ -179,9 +126,9 @@ export default function StrokePredictionPage() {
       heart_disease: 0,
       avg_glucose_level: 100,
       bmi: 25,
-      gender: 1,
-      Residence_type: 1,
-      smoking_status: 2,
+      gender: "Male",
+      Residence_type: "Urban",
+      smoking_status: "never smoked",
     });
   };
 
@@ -374,13 +321,7 @@ export default function StrokePredictionPage() {
                   <div className="space-y-2">
                     <Label htmlFor="gender">Gender</Label>
                     <Select
-                      value={
-                        formData.gender === 1
-                          ? "Male"
-                          : formData.gender === 0
-                          ? "Female"
-                          : "Other"
-                      }
+                      value={formData.gender}
                       onValueChange={(value) =>
                         handleSelectChange("gender", value)
                       }
@@ -400,7 +341,7 @@ export default function StrokePredictionPage() {
                     <Label htmlFor="Residence_type">Residence Type</Label>
                     <RadioGroup
                       id="Residence_type"
-                      value={formData.Residence_type === 1 ? "Urban" : "Rural"}
+                      value={formData.Residence_type}
                       onValueChange={(value) =>
                         handleSelectChange("Residence_type", value)
                       }
@@ -420,13 +361,7 @@ export default function StrokePredictionPage() {
                   <div className="space-y-2">
                     <Label htmlFor="smoking_status">Smoking Status</Label>
                     <Select
-                      value={
-                        formData.smoking_status === 2
-                          ? "never_smoked"
-                          : formData.smoking_status === 1
-                          ? "formerly_smoked"
-                          : "smokes"
-                      }
+                      value={formData.smoking_status}
                       onValueChange={(value) =>
                         handleSelectChange("smoking_status", value)
                       }
@@ -435,13 +370,14 @@ export default function StrokePredictionPage() {
                         <SelectValue placeholder="Select smoking status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="never_smoked">
+                        <SelectItem value="never smoked">
                           Never Smoked
                         </SelectItem>
-                        <SelectItem value="formerly_smoked">
+                        <SelectItem value="formerly smoked">
                           Formerly Smoked
                         </SelectItem>
                         <SelectItem value="smokes">Smokes</SelectItem>
+                        <SelectItem value="Unknown">Unknown</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

@@ -75,34 +75,25 @@ export default function CHDPredictionPage() {
     e.preventDefault()
     setIsLoading(true)
     setResult(null)
-
+       
     try {
-      // In a real app, this would be a fetch to your Flask backend
-      const response = await fetch("/api/predict/chd", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to get prediction")
-      }
-
-      // Simulate a response for demonstration
-      // In a real app, you would use: const data = await response.json();
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      // Mock result for demonstration
-      const mockProbability = Math.random()
-      const mockRisk = mockProbability > 0.7 ? "High" : mockProbability > 0.3 ? "Moderate" : "Low"
-
-      setResult({
-        probability: mockProbability,
-        risk: mockRisk,
-      })
-    } catch (error) {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/predict/chd`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(formData),
+  })
+  if (!response.ok) {
+    throw new Error("Failed to get prediction")
+  }
+  const data = await response.json()
+  const prob = typeof data.probability === "number" ? data.probability : 0
+  setResult({
+    probability: prob,
+    risk: prob > 0.7 ? "High" : prob > 0.3 ? "Moderate" : "Low",
+  })
+}catch (error) {
       console.error("Error:", error)
       toast({
         title: "Prediction Failed",

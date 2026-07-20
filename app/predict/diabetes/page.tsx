@@ -13,6 +13,7 @@ import { Droplet, AlertCircle, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function DiabetesPredictionPage() {
   const { toast } = useToast()
@@ -31,10 +32,10 @@ export default function DiabetesPredictionPage() {
     HDL: 50,
     LDL: 130,
     BUN: 15,
-    CCR: 1.1, // Changed from 90 to 1.1 as requested
+    CCR: 90, // Creatinine clearance; model trained on values ~[38, 105]
     FFPG: 95,
-    smoking: 0,
-    drinking: 0,
+    smoking: 3,
+    drinking: 3,
     family_histroy: 0, // Note the typo in "histroy" is intentional to match backend
   })
 
@@ -68,48 +69,55 @@ export default function DiabetesPredictionPage() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setResult(null)
-
-    try {
-      // In a real app, this would be a fetch to your Flask backend
-      const response = await fetch("/api/predict/diabetes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to get prediction")
-      }
-
-      // Simulate a response for demonstration
-      // In a real app, you would use: const data = await response.json();
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      // Mock result for demonstration
-      const mockProbability = Math.random() * 0.8
-      const mockRisk = mockProbability > 0.6 ? "High" : mockProbability > 0.3 ? "Moderate" : "Low"
-
-      setResult({
-        probability: mockProbability,
-        risk: mockRisk,
-      })
-    } catch (error) {
-      console.error("Error:", error)
-      toast({
-        title: "Prediction Failed",
-        description: "There was an error processing your request. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setIsLoading(true)
+  setResult(null)
+  try {
+    // The model was trained on mmol/L lab values and a 1/2 gender code, but the
+    // form collects familiar US mg/dL units. Convert before sending.
+    const MGDL_TO_MMOL_GLUCOSE = 18.0 // FPG, FFPG
+    const MGDL_TO_MMOL_CHOL = 38.67 // Chol, HDL, LDL
+    const MGDL_TO_MMOL_BUN = 2.8 // BUN -> urea
+    const payload = {
+      ...formData,
+      Gender: Number(formData.Gender) === 1 ? 1 : 2, // model codes 1=male, 2=female
+      FPG: Number(formData.FPG) / MGDL_TO_MMOL_GLUCOSE,
+      FFPG: Number(formData.FFPG) / MGDL_TO_MMOL_GLUCOSE,
+      Chol: Number(formData.Chol) / MGDL_TO_MMOL_CHOL,
+      HDL: Number(formData.HDL) / MGDL_TO_MMOL_CHOL,
+      LDL: Number(formData.LDL) / MGDL_TO_MMOL_CHOL,
+      BUN: Number(formData.BUN) / MGDL_TO_MMOL_BUN,
+      // smoking / drinking are sent as 1-3 codes (1=current, 2=former, 3=never)
     }
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/predict/diabetes`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    })
+    if (!response.ok) {
+      throw new Error("Failed to get prediction")
+    }
+    const data = await response.json()
+    const prob = typeof data.probability === "number" ? data.probability : 0
+    setResult({
+      probability: prob,
+      risk: prob > 0.6 ? "High" : prob > 0.3 ? "Moderate" : "Low",
+    })
+  } catch (error) {
+    console.error("Error:", error)
+    toast({
+      title: "Prediction Failed",
+      description: "There was an error processing your request. Please try again.",
+      variant: "destructive",
+    })
+  } finally {
+    setIsLoading(false)
   }
+}
 
   // Also update the resetForm function:
   const resetForm = () => {
@@ -125,7 +133,7 @@ export default function DiabetesPredictionPage() {
       HDL: 50,
       LDL: 130,
       BUN: 15,
-      CCR: 1.1,
+      CCR: 90,
       FFPG: 95,
       smoking: 0,
       drinking: 0,
@@ -381,40 +389,36 @@ export default function DiabetesPredictionPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="smoking">Smoking Status</Label>
-                    <RadioGroup
-                      id="smoking"
+                    <Select
                       value={formData.smoking.toString()}
                       onValueChange={(value) => handleSelectChange("smoking", value)}
-                      className="flex space-x-4"
                     >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="1" id="smoking-yes" />
-                        <Label htmlFor="smoking-yes">Smoker</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="0" id="smoking-no" />
-                        <Label htmlFor="smoking-no">Non-smoker</Label>
-                      </div>
-                    </RadioGroup>
+                      <SelectTrigger id="smoking">
+                        <SelectValue placeholder="Select smoking status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Current smoker</SelectItem>
+                        <SelectItem value="2">Former smoker</SelectItem>
+                        <SelectItem value="3">Never smoked</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="drinking">Drinking Status</Label>
-                    <RadioGroup
-                      id="drinking"
+                    <Select
                       value={formData.drinking.toString()}
                       onValueChange={(value) => handleSelectChange("drinking", value)}
-                      className="flex space-x-4"
                     >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="1" id="drinking-yes" />
-                        <Label htmlFor="drinking-yes">Drinker</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="0" id="drinking-no" />
-                        <Label htmlFor="drinking-no">Non-drinker</Label>
-                      </div>
-                    </RadioGroup>
+                      <SelectTrigger id="drinking">
+                        <SelectValue placeholder="Select drinking status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Current drinker</SelectItem>
+                        <SelectItem value="2">Former drinker</SelectItem>
+                        <SelectItem value="3">Never drinks</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
